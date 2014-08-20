@@ -24,6 +24,7 @@ my $netres = Net::DNS::Resolver->new();
 $netres->tcp_timeout(10);
 
 my $DEBUG = 1;
+my $PERCENT = 20;
 my %products = ();
 my %oss = ();
 
@@ -119,6 +120,18 @@ my @locations = ();
 
 while (my $location = $location_sth->fetchrow_hashref() ) {
     push(@locations, $location);
+}
+
+use List::Util qw(shuffle);
+if ($ARGV[0] ne 'checknow' && $PERCENT > 0) {
+  #We are doing a full scan, pick a random subset
+
+  my $total = @locations;
+  my $pick = int($total * ($PERCENT/100));
+
+  @locations = (shuffle @locations)[0..$pick-1];
+
+  log_this "Picked a random selection of $pick locations out of $total ($PERCENT%)";
 }
 
 $mirror_sth->execute();
